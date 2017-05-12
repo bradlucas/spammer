@@ -25,7 +25,7 @@
 (def max-spam-score 0.3)
 (def max-running-mean 0.05)
 (def max-mean-recent-100 0.1)
-
+()
 ;; TODO the process-input function is using a list so it can be used as a stack
 ;; This helps with the recent mean function as it is easy to take the recent values
 ;; This doesn't work when checking for new email because here we want a set
@@ -52,7 +52,7 @@
        (let [total (apply + coll)]
          (/ total cnt)))))
 
-(defn space-scoremean
+(defn calc-spam-score-mean
   "Return the mean of the :spam-score for a sequence of email-records"
   ([email-records]
    (let [cnt (count email-records)]
@@ -60,27 +60,40 @@
        (mean (map :spam-score email-records))
        0)))
   ([email-records num]
-   (space-scoremean (take num email-records))))
+   (calc-spam-score-mean (take num email-records))))
 
 
 (defn process-input 
-  "Take a sequence of email-records and process them occurding to the rules"
+  "Take a sequence of email-records and process them occurding to the rules
+
+We need you to write a system that will process our email batches and
+decide whether or not to send each email based on the following rules:
+
+1. Must send a maximum of one email per address.
+2. Must never send an email with a spam score of more than 0.3.
+3. The running mean of spam ratings must never get above 0.05. (In
+   other words, as each email is processed the mean spam score of all
+   the emails that have sent in the batch needs to be recalculated and
+   can't ever be more than 0.05.)
+4. The mean spam score of the most recent 100 emails sent can't go
+   above 0.1.
+"
   [email-records]
   (loop [records email-records
          sent-emails '()]
 
-    (if (empty? records)
+    (if (empty? records) 
       sent-emails
 
       (let [email-record (first records)
-            running-mean (space-scoremean sent-emails)
-            recent-mean (space-scoremean sent-emails 100)]
-        ;; (println email-record)
+            running-mean (calc-spam-score-mean sent-emails)
+            recent-mean (calc-spam-score-mean sent-emails 100)]
+        (println running-mean)
         
         ;; ok to send
         (if (and (new-email sent-emails email-record)
-                 ;; (valid-running-mean running-mean)
-                 ;; (valid-recent-mean  recent-mean)
+                 (valid-running-mean running-mean)
+                 (valid-recent-mean  recent-mean)
                  (valid-spam-score email-record))
             (recur (rest records) (conj sent-emails email-record))
           (recur (rest records) sent-emails))
