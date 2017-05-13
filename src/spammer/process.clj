@@ -28,8 +28,8 @@
 ;; So, for now we build a set each time which isn't good for a final version
 (defn new-email 
   "Return true if the email is not in the sent-emails set"
-  [sent-emails email]
-  (nil? ((set (map :email-address sent-emails)) email)))
+  [email-record sent-emails]
+  (nil? ((set (map :email-address sent-emails)) (:email-address email-record))))
 
 (defn valid-spam-score [email-record]
   (<= (:spam-score email-record) max-spam-score))
@@ -73,7 +73,7 @@
   [email-record sent-emails]
   (let [running-mean (running-mean (conj sent-emails email-record))
         recent-mean (recent-mean (conj sent-emails email-record))]
-    (and (new-email sent-emails email-record)
+    (and (new-email email-record sent-emails)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
          (valid-recent-mean  recent-mean))))
