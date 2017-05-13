@@ -58,12 +58,21 @@
   ([email-records num]
    (calc-spam-score-mean (take num email-records))))
 
+(defn running-mean 
+  "Return the mean of the list of email-records"
+  [email-records]
+  (calc-spam-score-mean email-records))
+
+(defn recent-mean 
+  "Return the mean of the most recent 100 email records"
+  [email-records]
+  (calc-spam-score-mean email-records 100))
 
 (defn ok-to-send 
   "Check if email-record is good to send"
   [email-record sent-emails]
-  (let [running-mean (calc-spam-score-mean (conj sent-emails email-record))
-        recent-mean (calc-spam-score-mean (conj sent-emails email-record) 100)]
+  (let [running-mean (running-mean (conj sent-emails email-record))
+        recent-mean (recent-mean (conj sent-emails email-record))]
     (and (new-email sent-emails email-record)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
