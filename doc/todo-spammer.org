@@ -15,7 +15,8 @@
 *** DONE Verify the running mean and recent mean functions are working properly
 
 ** Next...
-*** Add tests
+*** DONE Add tests for simpler functions
+*** Add tests for ok-to-send and process-input
 *** Need a better new-mail function
 - Need a ordered set
 *** Command line to accept test file or number of test records to generate
