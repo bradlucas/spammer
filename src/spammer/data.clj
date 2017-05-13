@@ -37,7 +37,7 @@
 
 
 ;; --------------------------------------------------------------------------------
-;; Dev
+;; Development generate function
 ;; Add this to project.clj
 ;;   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
 
