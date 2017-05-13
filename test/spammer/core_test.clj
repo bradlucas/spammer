@@ -48,14 +48,45 @@
 (deftest new-email-false
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (not (process/new-email '({:email-address "foo@foo.com" :spam-score 0.1}) "foo@foo.com")))))
+    (is (not (process/new-email  {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
+
+
+;; 1. Must send a maximum of one email per address.
+;; 2. Must never send an email with a spam score of more than 0.3.
+;; 3. The running mean of spam ratings must never get above 0.05. (In
+;;    other words, as each email is processed the mean spam score of all
+;;    the emails that have sent in the batch needs to be recalculated and
+;;    can't ever be more than 0.05.)
+;; 4. The mean spam score of the most recent 100 emails sent can't go
+;;    above 0.1.
 
 
 ;; TODO these need more work...
-(deftest ok-to-send 
+(deftest ok-to-send-1
+  "Test if ok-to-send fails an email that has already been sent"
+  (testing "1. Must send a maximum of one email per address."
+    (is (not (process/ok-to-send {:email-address "foo1@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001}))))))
+
+(deftest ok-to-send-1-1
+  "Test if ok-to-send allows a new email"
+  (testing "1. Must send a maximum of one email per address."
+    (is (process/ok-to-send {:email-address "foo2@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001})))))
+
+(deftest ok-to-send-2
+  "Test check for email's spam score being less than or equal to 0.3"
+  (testing "2. Must never send an email with a spam score of more than 0.3."
+    (is (process/ok-to-send {:email-address "foo2@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001})))))
+
+(deftest ok-to-send-3
+  "Test if ok to send when running mean is less than 0.05"
+  (testing "3. The running mean of spam ratings must never get above 0.05."
+    (is (process/ok-to-send {:email-address "foo3@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001} {:email-address "foo2@foo.com" :spam-score 0.001})))))
+
+(deftest ok-to-send-4
   (testing ""
     (is true)))
 
+;; TODO but ok-to-send is the meat of it
 (deftest process-input 
   (testing ""
     (is true)))
