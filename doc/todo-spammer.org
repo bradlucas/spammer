@@ -8,18 +8,18 @@
 
 * Things to do or consider
 
-** First version
+** feature/fix-mean-logic
 *** DONE Running mean needs to be pre-processed so the next possible value isn't above the limit
 *** DONE Same for the recent mean
 *** DONE Refactor process-input to use ok-to-send
 *** DONE Verify the running mean and recent mean functions are working properly
+
+** Next...
 *** Add tests
 *** Need a better new-mail function
 - Need a ordered set
 *** Command line to accept test file or number of test records to generate
 *** Could use environ to pull 'max' values out of the enironment
-
-** Next version
 *** What about a long running version. Suppose one that doesn't end?
 **** Interruptable?
 **** Support for interface to values while running
