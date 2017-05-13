@@ -87,19 +87,6 @@ decide whether or not to send each email based on the following rules:
   [email-records]
   (loop [records email-records
          sent-emails '()]
-    ;; (if (empty? records)
-    ;;   sent-emails
-    ;;   (let [email-record (first records)
-    ;;         running-mean (calc-spam-score-mean (conj sent-emails email-record))
-    ;;         recent-mean (calc-spam-score-mean (conj sent-emails email-record) 100)]
-    ;;     (if (and (new-email sent-emails email-record)
-    ;;              (valid-spam-score email-record)
-    ;;              (valid-running-mean running-mean)
-    ;;              (valid-recent-mean  recent-mean))
-    ;;       (recur (rest records) (conj sent-emails email-record))
-    ;;       (recur (rest records) sent-emails))
-    ;;     )
-    ;;   )
 
     (if (empty? records)
       sent-emails
@@ -107,7 +94,6 @@ decide whether or not to send each email based on the following rules:
              (let [email-record (first records)]
                (if (ok-to-send email-record sent-emails)
                  (conj sent-emails email-record)
-                 sent-emails)))))
-  )
+                 sent-emails))))))
 
 
