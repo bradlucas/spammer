@@ -22,21 +22,30 @@
 (def max-running-mean 0.05)
 (def max-mean-recent-100 0.1)
 
-;; TODO the process-input function is using a list so it can be used as a stack
-;; This helps with the recent mean function as it is easy to take the recent values
-;; This doesn't work when checking for new email because here we want a set
-;; So, for now we build a set each time which isn't good for a final version
-(defn new-email 
-  "Return true if the email is not in the sent-emails set"
-  [email-record sent-emails]
-  (nil? ((set (map :email-address sent-emails)) (:email-address email-record))))
 
-(defn add-to-sent 
+(defn sent-add
   "Add a new record to the sent set and return the new set"
   [email-record sent-emails]
   (if (empty? sent-emails)
     (conj '() email-record)
     (conj sent-emails email-record)))
+
+(defn sent-contains?
+  "Return true if the sent-emails set contains the email-record
+
+NOTE:
+This version is inefficient because we are using a list for sent-emails and to 
+check if it contains a specific email we map the emails into a set and then
+use the set to see if the email was in the original list.
+
+"
+  [email-record sent-emails]
+  ((set (map :email-address sent-emails)) (:email-address email-record)))
+
+(defn new-email?
+  "Return true if the email is not in the sent-emails set"
+  [email-record sent-emails]
+  (nil? (sent-contains? email-record sent-emails)))
 
 (defn valid-spam-score [email-record]
   (<= (:spam-score email-record) max-spam-score))
@@ -80,7 +89,7 @@
   [email-record sent-emails]
   (let [running-mean (running-mean (conj sent-emails email-record))
         recent-mean (recent-mean (conj sent-emails email-record))]
-    (and (new-email email-record sent-emails)
+    (and (new-email? email-record sent-emails)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
          (valid-recent-mean  recent-mean))))
@@ -109,7 +118,7 @@ decide whether or not to send each email based on the following rules:
       (recur (rest records) 
              (let [email-record (first records)]
                (if (ok-to-send email-record sent-emails)
-                 (add-to-sent email-record sent-emails)
+                 (sent-add email-record sent-emails)
                  sent-emails))))))
 
 
