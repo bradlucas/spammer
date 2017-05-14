@@ -15,9 +15,11 @@
 ** DONE feature/add-tests
 *** DONE Add tests for simpler functions
 *** DONE Add tests for ok-to-send
-** Next...
+** feature/ordered-set
 *** Need a better new-mail function
 - Need a ordered set
+- Try https://github.com/amalloy/ordered
+** Next...
 *** Command line to accept test file or number of test records to generate
 *** Could use environ to pull 'max' values out of the enironment
 *** What about a long running version. Suppose one that doesn't end?
