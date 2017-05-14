@@ -43,13 +43,13 @@
 (deftest new-email-true
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (process/new-email '({:email-address "test@test.com" :spam-score 0.1}) "foo@foo.com"))))
+    (is (process/new-email? '({:email-address "test@test.com" :spam-score 0.1}) "foo@foo.com"))))
 
 
 (deftest new-email-false
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (not (process/new-email  {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
+    (is (not (process/new-email? {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
 
 
 ;; 1. Must send a maximum of one email per address.
