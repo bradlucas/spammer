@@ -7,16 +7,15 @@
 #+OPTIONS: ^:nil
 
 * Things to do or consider
-
-** feature/fix-mean-logic
+** DONE feature/fix-mean-logic
 *** DONE Running mean needs to be pre-processed so the next possible value isn't above the limit
 *** DONE Same for the recent mean
 *** DONE Refactor process-input to use ok-to-send
 *** DONE Verify the running mean and recent mean functions are working properly
-
-** Next...
+** DONE feature/add-tests
 *** DONE Add tests for simpler functions
-*** Add tests for ok-to-send and process-input
+*** DONE Add tests for ok-to-send
+** Next...
 *** Need a better new-mail function
 - Need a ordered set
 *** Command line to accept test file or number of test records to generate
