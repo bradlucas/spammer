@@ -31,6 +31,13 @@
   [email-record sent-emails]
   (nil? ((set (map :email-address sent-emails)) (:email-address email-record))))
 
+(defn add-to-sent 
+  "Add a new record to the sent set and return the new set"
+  [email-record sent-emails]
+  (if (empty? sent-emails)
+    (conj '() email-record)
+    (conj sent-emails email-record)))
+
 (defn valid-spam-score [email-record]
   (<= (:spam-score email-record) max-spam-score))
 
@@ -102,7 +109,7 @@ decide whether or not to send each email based on the following rules:
       (recur (rest records) 
              (let [email-record (first records)]
                (if (ok-to-send email-record sent-emails)
-                 (conj sent-emails email-record)
+                 (add-to-sent email-record sent-emails)
                  sent-emails))))))
 
 
