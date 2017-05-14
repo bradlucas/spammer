@@ -1,6 +1,7 @@
 (ns spammer.core-test
   (:require [clojure.test :refer :all]
-            [spammer.process :as process]))
+            [spammer.process :as process]
+            [spammer.data :as data]))
 
 ;; (deftest a-test
 ;;   (testing "FIXME, I fail."
@@ -37,7 +38,7 @@
 
 (deftest recent-mean 
   (testing "TODO - build list of 100+ known records and then test validating the first 100's mean"
-    (is (= 0.5 (process/running-mean [{:spam-score 0.4} {:spam-score 0.6}])))))
+    (is (= 0.5 (process/recent-mean (data/generate-fixed-score 200 0.5))))))
 
 (deftest new-email-true
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
@@ -83,11 +84,12 @@
     (is (process/ok-to-send {:email-address "foo3@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001} {:email-address "foo2@foo.com" :spam-score 0.001})))))
 
 (deftest ok-to-send-4
+  "Test send if recent 100 mean less then 0.1"
   (testing ""
-    (is true)))
+    (is (process/ok-to-send {:email-address "foo3@foo.com" :spam-score 0.001} (data/generate-fixed-score 100 0.05)))))
 
-;; TODO but ok-to-send is the meat of it
-(deftest process-input 
-  (testing ""
-    (is true)))
+;; TODO but ok-to-send is the meat of things
+;; (deftest process-input 
+;;   (testing ""
+;;     (is true)))
 
