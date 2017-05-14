@@ -49,3 +49,6 @@
   ([num] (take num (generate))))
 
 
+;; For building examples with 0.1 for a spam-score
+(defn generate-fixed-score [num spam-score]
+  (take num (repeatedly  (fn [] {:email-address (gen/generate (s/gen ::email-address)) :spam-score spam-score}))))
