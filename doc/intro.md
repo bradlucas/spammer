@@ -1,3 +1,11 @@
 # Introduction to spammer
 
-TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)
+
+## Problem Statement
+
+[interview-problem.org](interview-problem.org)
+
+## TODO file
+
+[todo-spammer.org](todo-spammer.org)
+
