@@ -37,7 +37,7 @@
 
 
 ;; --------------------------------------------------------------------------------
-;; Dev
+;; Development generate function
 ;; Add this to project.clj
 ;;   :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
 
@@ -49,3 +49,6 @@
   ([num] (take num (generate))))
 
 
+;; For building examples with 0.1 for a spam-score
+(defn generate-fixed-score [num spam-score]
+  (take num (repeatedly  (fn [] {:email-address (gen/generate (s/gen ::email-address)) :spam-score spam-score}))))
