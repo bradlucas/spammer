@@ -1,5 +1,6 @@
 (ns spammer.process
-  (:require [spammer.data :as data]))
+  (:require [flatland.ordered.set :as os]
+            [spammer.data :as data]))
 
 ;; We need you to write a system that will process our email batches and
 ;; decide whether or not to send each email based on the following rules:
@@ -22,14 +23,29 @@
 (def max-running-mean 0.05)
 (def max-mean-recent-100 0.1)
 
-;; TODO the process-input function is using a list so it can be used as a stack
-;; This helps with the recent mean function as it is easy to take the recent values
-;; This doesn't work when checking for new email because here we want a set
-;; So, for now we build a set each time which isn't good for a final version
-(defn new-email 
+
+(defn sent-add
+  "Add a new record to the sent set and return the new set"
+  [sent-emails email-record]
+  (if (empty? sent-emails)
+    (os/ordered-set email-record)
+    (conj sent-emails email-record)))
+
+(defn sent-contains?
+  "Return true if the sent-emails set contains the email-record
+
+NOTE:
+This version replaces the previous list based one with an ordered-set.
+With this we can use contains to check for the email-record.
+"
+  [sent-emails email-record]
+  (let [email-address (:email-address email-record)]
+    (some #(= email-address (:email-address %)) sent-emails)))
+
+(defn new-email?
   "Return true if the email is not in the sent-emails set"
-  [email-record sent-emails]
-  (nil? ((set (map :email-address sent-emails)) (:email-address email-record))))
+  [sent-emails email-record]
+  (nil? (sent-contains? sent-emails email-record)))
 
 (defn valid-spam-score [email-record]
   (<= (:spam-score email-record) max-spam-score))
@@ -70,10 +86,10 @@
 
 (defn ok-to-send 
   "Check if email-record is good to send"
-  [email-record sent-emails]
+  [sent-emails email-record]
   (let [running-mean (running-mean (conj sent-emails email-record))
         recent-mean (recent-mean (conj sent-emails email-record))]
-    (and (new-email email-record sent-emails)
+    (and (new-email? sent-emails email-record)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
          (valid-recent-mean  recent-mean))))
@@ -95,14 +111,14 @@ decide whether or not to send each email based on the following rules:
 "
   [email-records]
   (loop [records email-records
-         sent-emails '()]
+         sent-emails nil]
 
     (if (empty? records)
       sent-emails
       (recur (rest records) 
              (let [email-record (first records)]
-               (if (ok-to-send email-record sent-emails)
-                 (conj sent-emails email-record)
+               (if (ok-to-send sent-emails email-record)
+                 (sent-add sent-emails email-record)
                  sent-emails))))))
 
 

@@ -1,5 +1,6 @@
 (ns spammer.core-test
   (:require [clojure.test :refer :all]
+            [flatland.ordered.set :as os]
             [spammer.process :as process]
             [spammer.data :as data]))
 
@@ -38,18 +39,18 @@
 
 (deftest recent-mean 
   (testing "TODO - build list of 100+ known records and then test validating the first 100's mean"
-    (is (= 0.5 (process/recent-mean (data/generate-fixed-score 200 0.5))))))
+    (is (= 0.5 (process/recent-mean (into (os/ordered-set) (data/generate-fixed-score 200 0.5)))))))
 
 (deftest new-email-true
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (process/new-email '({:email-address "test@test.com" :spam-score 0.1}) "foo@foo.com"))))
+    (is (process/new-email? '({:email-address "test@test.com" :spam-score 0.1}) {:email-address "foo@foo.com" :spam-score 0.2}))))
 
 
 (deftest new-email-false
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (not (process/new-email  {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
+    (is (not (process/new-email? {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
 
 
 ;; 1. Must send a maximum of one email per address.
@@ -66,27 +67,27 @@
 (deftest ok-to-send-1
   "Test if ok-to-send fails an email that has already been sent"
   (testing "1. Must send a maximum of one email per address."
-    (is (not (process/ok-to-send {:email-address "foo1@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001}))))))
+    (is (not (process/ok-to-send  '({:email-address "foo1@foo.com" :spam-score 0.001}) {:email-address "foo1@foo.com" :spam-score 0.001})))))
 
 (deftest ok-to-send-1-1
   "Test if ok-to-send allows a new email"
   (testing "1. Must send a maximum of one email per address."
-    (is (process/ok-to-send {:email-address "foo2@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001})))))
+    (is (process/ok-to-send '({:email-address "foo1@foo.com" :spam-score 0.001}) {:email-address "foo2@foo.com" :spam-score 0.001}))))
 
 (deftest ok-to-send-2
   "Test check for email's spam score being less than or equal to 0.3"
   (testing "2. Must never send an email with a spam score of more than 0.3."
-    (is (process/ok-to-send {:email-address "foo2@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001})))))
+    (is (process/ok-to-send '({:email-address "foo1@foo.com" :spam-score 0.001}) {:email-address "foo2@foo.com" :spam-score 0.001}))))
 
 (deftest ok-to-send-3
   "Test if ok to send when running mean is less than 0.05"
   (testing "3. The running mean of spam ratings must never get above 0.05."
-    (is (process/ok-to-send {:email-address "foo3@foo.com" :spam-score 0.001} '({:email-address "foo1@foo.com" :spam-score 0.001} {:email-address "foo2@foo.com" :spam-score 0.001})))))
+    (is (process/ok-to-send '({:email-address "foo1@foo.com" :spam-score 0.001} {:email-address "foo2@foo.com" :spam-score 0.001}) {:email-address "foo3@foo.com" :spam-score 0.001}))))
 
 (deftest ok-to-send-4
   "Test send if recent 100 mean less then 0.1"
   (testing ""
-    (is (process/ok-to-send {:email-address "foo3@foo.com" :spam-score 0.001} (data/generate-fixed-score 100 0.05)))))
+    (is (process/ok-to-send (into (os/ordered-set) (data/generate-fixed-score 100 0.05)) {:email-address "foo3@foo.com" :spam-score 0.001}))))
 
 ;; TODO but ok-to-send is the meat of things
 ;; (deftest process-input 
