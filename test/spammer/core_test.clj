@@ -1,6 +1,5 @@
 (ns spammer.core-test
   (:require [clojure.test :refer :all]
-            [flatland.ordered.set :as os]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [spammer.process :as process]
             [spammer.data :as data]))
@@ -55,12 +54,12 @@
 (deftest new-email-true
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (process/new-email? '({:email-address "test@test.com" :spam-score 0.1}) {:email-address "foo@foo.com" :spam-score 0.2}))))
+    (is (process/new-email? #{"test@test.com"} {:email-address "foo@foo.com" :spam-score 0.2}))))
 
 (deftest new-email-false
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
   (testing "new-mail"
-    (is (not (process/new-email? {:email-address "foo@foo.com" :spam-score 0.1} '({:email-address "foo@foo.com" :spam-score 0.1}))))))
+    (is (not (process/new-email? #{"foo@foo.com"}  {:email-address "foo@foo.com" :spam-score 0.1})))))
 
 
 ;; 1. Must send a maximum of one email per address.
@@ -76,7 +75,7 @@
 (deftest ok-to-send-1
   "Test if ok-to-send fails an email that has already been sent"
   (testing "1. Must send a maximum of one email per address."
-    (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})    ;; ordered-set
+    (let [acc {:sent-emails #{"foo1@foo.com"}
                :running-total 0    ;; total of all :spam-code values for sent-emails
                :running-count 0    ;; number of sent-emails
                :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
@@ -89,7 +88,7 @@
 (deftest ok-to-send-1-1
   "Test if ok-to-send allows a new email"
   (testing "1. Must send a maximum of one email per address."
-    (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})    ;; ordered-set
+    (let [acc {:sent-emails #{"foo1@foo.com"}
                :running-total 0    ;; total of all :spam-code values for sent-emails
                :running-count 0    ;; number of sent-emails
                :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
@@ -102,7 +101,7 @@
 (deftest ok-to-send-2
   "Test check for email's spam score being less than or equal to 0.3"
   (testing "2. Must never send an email with a spam score of more than 0.3."
-    (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})    ;; ordered-set
+    (let [acc {:sent-emails #{"foo1@foo.com"}
                :running-total 0    ;; total of all :spam-code values for sent-emails
                :running-count 0    ;; number of sent-emails
                :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
@@ -115,7 +114,7 @@
 (deftest ok-to-send-3
   "Test if ok to send when running mean is less than 0.05"
   (testing "3. The running mean of spam ratings must never get above 0.05."
-    (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})    ;; ordered-set
+    (let [acc {:sent-emails #{"foo1@foo.com"}
                :running-total 0.002   ;; total of all :spam-code values for sent-emails
                :running-count 2    ;; number of sent-emails
                :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
@@ -129,7 +128,7 @@
 ;; (deftest ok-to-send-4
 ;;   "Test send if recent 100 mean less then 0.1"
 ;;   (testing ""
-;;     (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})    ;; ordered-set
+;;     (let [acc {:sent-emails '({:email-address "foo1@foo.com" :spam-score 0.001})
 ;;                :running-total 0    ;; total of all :spam-code values for sent-emails
 ;;                :running-count 0    ;; number of sent-emails
 ;;                :recent-100    nil  ;; ring-buffer with recent 100 sent-emails

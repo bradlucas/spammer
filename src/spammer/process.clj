@@ -42,13 +42,13 @@ NOTE:
 This version replaces the previous list based one with an ordered-set.
 With this we can use contains to check for the email-record.
 "
-  [sent-emails email-record]
-  (sent-emails (:email-address email-record)))
+  [sent-emails email]
+  (sent-emails email))
 
 (defn new-email?
   "Return true if the email is not in the sent-emails set"
   [sent-emails email-record]
-  (nil? (sent-contains? sent-emails email-record)))
+  (nil? (sent-contains? sent-emails (:email-address email-record))))
 
 (defn valid-spam-score [email-record]
   (<= (:spam-score email-record) max-spam-score))
