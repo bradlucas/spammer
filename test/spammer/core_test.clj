@@ -1,6 +1,7 @@
 (ns spammer.core-test
   (:require [clojure.test :refer :all]
             [flatland.ordered.set :as os]
+            [amalloy.ring-buffer :refer [ring-buffer]]
             [spammer.process :as process]
             [spammer.data :as data]))
 
@@ -49,7 +50,7 @@
 
 (deftest recent-mean 
   (testing "TODO - build list of 100+ known records and then test validating the first 100's mean"
-    (is (= 0.5 (process/recent-mean (into (os/ordered-set) (data/generate-fixed-score 200 0.5)))))))
+    (is (= 0.5 (process/recent-mean (into (ring-buffer 100) (map :spam-score (data/generate-fixed-score 200 0.5))))))))
 
 (deftest new-email-true
   "New mail is one that is not in the set of sent-emils which is a list of email-records"
