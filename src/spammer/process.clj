@@ -1,5 +1,6 @@
 (ns spammer.process
   (:require [flatland.ordered.set :as os]
+            [amalloy.ring-buffer :refer [ring-buffer]] ;; @see https://github.com/amalloy/ring-buffer
             [spammer.data :as data]))
 
 (use 'clojure.pprint)
@@ -29,11 +30,13 @@
   "Add a new record to the sent set and return the new set"
   [acc email-record]
   (if (empty? (:sent-emails acc))
-    (assoc acc :sent-emails (os/ordered-set email-record))
+    (assoc acc :sent-emails (os/ordered-set email-record) :recent-100 (into (:recent-100 acc) (list (:spam-score email-record))))
     (assoc acc 
       :sent-emails (conj (:sent-emails acc) email-record)
       :running-total (+ (:running-total acc) (:spam-score email-record))
-      :running-count (inc (:running-count acc)))))
+      :running-count (inc (:running-count acc))
+      :recent-100 (into (:recent-100 acc) (list (:spam-score email-record)))
+      )))
 
 (defn sent-contains?
   "Return true if the sent-emails set contains the email-record
@@ -58,7 +61,9 @@ With this we can use contains to check for the email-record.
   (<= val max-running-mean))
 
 (defn valid-recent-mean [val]
-  (<= val max-mean-recent-100))
+  (if (nil? val)
+    0
+    (<= val max-mean-recent-100)))
 
 (defn mean 
   "Return the mean (average) of a collection of numbers"
@@ -84,9 +89,9 @@ With this we can use contains to check for the email-record.
   (/ (+ (:running-total acc) (:spam-score email-record)) (inc (:running-count acc))))
 
 (defn recent-mean 
-  "Return the mean of the most recent 100 email records"
-  [email-records]
-  (calc-spam-score-mean email-records 100))
+  "Return the mean of the most recent 100 email record's spam-score values"
+  [vals]
+  (mean vals))
 
 (defn ok-to-send 
   "Check if email-record is good to send"
@@ -94,11 +99,11 @@ With this we can use contains to check for the email-record.
   ;; (clojure.pprint/pprint acc)
   (let [sent-emails (:sent-emails acc)
         running-mean (new-running-mean acc email-record)
-        recent-mean (recent-mean sent-emails)]
+        recent-mean (recent-mean (:recent-100 acc))]
     (and (new-email? sent-emails email-record)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
-         (valid-recent-mean  recent-mean))))
+         (valid-recent-mean recent-mean))))
 
 (defn process-input 
   "Take a sequence of email-records and process them occurding to the rules
@@ -120,7 +125,7 @@ decide whether or not to send each email based on the following rules:
          acc {:sent-emails nil    ;; ordered-set
               :running-total 0    ;; total of all :spam-code values for sent-emails
               :running-count 0    ;; number of sent-emails
-              :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
+              :recent-100 (ring-buffer 100)     ;; ring-buffer with recent 100 sent-emails
               }
          ]
 
