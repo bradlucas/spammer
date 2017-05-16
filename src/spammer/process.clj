@@ -78,10 +78,10 @@ With this we can use contains to check for the email-record.
   ([email-records num]
    (calc-spam-score-mean (take num email-records))))
 
-(defn running-mean 
-  "Return the mean of the list of email-records"
-  [email-records]
-  (calc-spam-score-mean email-records))
+(defn new-running-mean 
+  "Return the new mean after consider a new email-record"
+  [acc email-record]
+  (/ (+ (:running-total acc) (:spam-score email-record)) (inc (:running-count acc))))
 
 (defn recent-mean 
   "Return the mean of the most recent 100 email records"
@@ -93,7 +93,7 @@ With this we can use contains to check for the email-record.
   [acc email-record]
   ;; (clojure.pprint/pprint acc)
   (let [sent-emails (:sent-emails acc)
-        running-mean (/ (+ (:running-total acc) (:spam-score email-record)) (inc (:running-count acc)))
+        running-mean (new-running-mean acc email-record)
         recent-mean (recent-mean sent-emails)]
     (and (new-email? sent-emails email-record)
          (valid-spam-score email-record)
