@@ -1,6 +1,5 @@
 (ns spammer.process
-  (:require [flatland.ordered.set :as os]
-            [amalloy.ring-buffer :refer [ring-buffer]] ;; @see https://github.com/amalloy/ring-buffer
+  (:require [amalloy.ring-buffer :refer [ring-buffer]] ;; @see https://github.com/amalloy/ring-buffer
             [spammer.data :as data]))
 
 (use 'clojure.pprint)
@@ -29,14 +28,12 @@
 (defn sent-add
   "Add a new record to the sent set and return the new set"
   [acc email-record]
-  (if (empty? (:sent-emails acc))
-    (assoc acc :sent-emails (os/ordered-set email-record) :recent-100 (into (:recent-100 acc) (list (:spam-score email-record))))
     (assoc acc 
-      :sent-emails (conj (:sent-emails acc) email-record)
+      :sent-emails (conj (:sent-emails acc) (:email-address email-record))
       :running-total (+ (:running-total acc) (:spam-score email-record))
       :running-count (inc (:running-count acc))
       :recent-100 (into (:recent-100 acc) (list (:spam-score email-record)))
-      )))
+      ))
 
 (defn sent-contains?
   "Return true if the sent-emails set contains the email-record
@@ -46,8 +43,7 @@ This version replaces the previous list based one with an ordered-set.
 With this we can use contains to check for the email-record.
 "
   [sent-emails email-record]
-  (let [email-address (:email-address email-record)]
-    (some #(= email-address (:email-address %)) sent-emails)))
+  (sent-emails (:email-address email-record)))
 
 (defn new-email?
   "Return true if the email is not in the sent-emails set"
@@ -122,13 +118,11 @@ decide whether or not to send each email based on the following rules:
 "
   [email-records]
   (loop [records email-records
-         acc {:sent-emails nil    ;; ordered-set
+         acc {:sent-emails #{}    ;; set
               :running-total 0    ;; total of all :spam-code values for sent-emails
               :running-count 0    ;; number of sent-emails
               :recent-100 (ring-buffer 100)     ;; ring-buffer with recent 100 sent-emails
-              }
-         ]
-
+              }]
     (if (empty? records)
       (:sent-emails acc)
       (recur (rest records) 

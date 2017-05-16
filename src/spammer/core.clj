@@ -12,8 +12,8 @@
     (println "Processing " (count data) " sample email data records")
     (println "--------------------------------------------------------------------------------")
     (println "Send " (count send-emails))
-    (doseq [r send-emails]
-      (println (:email-address r))
+    (doseq [e send-emails]
+      (println e)
       )
     )
   )

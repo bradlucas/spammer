@@ -25,12 +25,13 @@
 
 - check for just email
 
-** feature/performance-means
+** DONE feature/performance-means
 *** DONE Calculate running mean without scanning the entire set
 Since the mean is the total divided by the number keep a running total and number of items
-*** Calculate recent mean without taking 100 from the entire set each time
+*** DONE Calculate recent mean without taking 100 from the entire set each time
 - https://github.com/amalloy/ring-buffer
-*** No longer Don't need the order-set. Can use a set for the sent-emails
+*** DONE With the ring-buffer and the new running mean technique we no longer need the order-set of email records.
+- Simply save the emails to send in a Set
 ** Next...
 *** Command line to accept test file or number of test records to generate
 *** Could use environ to pull 'max' values out of the enironment
@@ -38,6 +39,5 @@ Since the mean is the total divided by the number keep a running total and numbe
 *** What about a long running version. Suppose one that doesn't end?
 **** Interruptable?
 **** Support for interface to values while running
-
 
 
