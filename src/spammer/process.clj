@@ -2,6 +2,7 @@
   (:require [flatland.ordered.set :as os]
             [spammer.data :as data]))
 
+(use 'clojure.pprint)
 ;; We need you to write a system that will process our email batches and
 ;; decide whether or not to send each email based on the following rules:
 
@@ -26,10 +27,13 @@
 
 (defn sent-add
   "Add a new record to the sent set and return the new set"
-  [sent-emails email-record]
-  (if (empty? sent-emails)
-    (os/ordered-set email-record)
-    (conj sent-emails email-record)))
+  [acc email-record]
+  (if (empty? (:sent-emails acc))
+    (assoc acc :sent-emails (os/ordered-set email-record))
+    (assoc acc 
+      :sent-emails (conj (:sent-emails acc) email-record)
+      :running-total (+ (:running-total acc) (:spam-score email-record))
+      :running-count (inc (:running-count acc)))))
 
 (defn sent-contains?
   "Return true if the sent-emails set contains the email-record
@@ -86,9 +90,11 @@ With this we can use contains to check for the email-record.
 
 (defn ok-to-send 
   "Check if email-record is good to send"
-  [sent-emails email-record]
-  (let [running-mean (running-mean (conj sent-emails email-record))
-        recent-mean (recent-mean (conj sent-emails email-record))]
+  [acc email-record]
+  ;; (clojure.pprint/pprint acc)
+  (let [sent-emails (:sent-emails acc)
+        running-mean (/ (+ (:running-total acc) (:spam-score email-record)) (inc (:running-count acc)))
+        recent-mean (recent-mean sent-emails)]
     (and (new-email? sent-emails email-record)
          (valid-spam-score email-record)
          (valid-running-mean running-mean)
@@ -111,14 +117,19 @@ decide whether or not to send each email based on the following rules:
 "
   [email-records]
   (loop [records email-records
-         sent-emails nil]
+         acc {:sent-emails nil    ;; ordered-set
+              :running-total 0    ;; total of all :spam-code values for sent-emails
+              :running-count 0    ;; number of sent-emails
+              :recent-100    nil  ;; ring-buffer with recent 100 sent-emails
+              }
+         ]
 
     (if (empty? records)
-      sent-emails
+      (:sent-emails acc)
       (recur (rest records) 
              (let [email-record (first records)]
-               (if (ok-to-send sent-emails email-record)
-                 (sent-add sent-emails email-record)
-                 sent-emails))))))
+               (if (ok-to-send acc email-record)
+                 (sent-add acc email-record)
+                 acc))))))
 
 
