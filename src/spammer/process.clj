@@ -124,7 +124,7 @@ decide whether or not to send each email based on the following rules:
               :recent-100 (ring-buffer 100)     ;; ring-buffer with recent 100 sent-emails
               }]
     (if (empty? records)
-      (:sent-emails acc)
+      acc
       (recur (rest records) 
              (let [email-record (first records)]
                (if (ok-to-send acc email-record)
@@ -132,3 +132,24 @@ decide whether or not to send each email based on the following rules:
                  acc))))))
 
 
+
+(defn debug-print-acc [acc]
+  (let [sent-emails (:sent-emails acc)
+        running-total (:running-total acc)
+        running-count (:running-count acc)
+        recent-100 (:recent-100 acc)
+        running-mean (/ running-total running-count)
+        recent-mean (recent-mean recent-100)]
+    (println "Running total:     " running-total)
+    (println "Running count:     " running-count)
+    (println "Running mean:      " running-mean)
+    (println "Recent 100 mean:   " recent-mean)
+    (println "Sent-emails count: " (count sent-emails))
+    (println "--------------------------------------------------------------------------------")
+    ;; Only show 10 emails then ....
+    ;; TODO this could be configurable
+    (doseq [e (take 10 sent-emails)]
+      (println e))
+    (if (> running-count 10) 
+      (println "....")))
+   )
