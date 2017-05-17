@@ -32,12 +32,14 @@ Since the mean is the total divided by the number keep a running total and numbe
 - https://github.com/amalloy/ring-buffer
 *** DONE With the ring-buffer and the new running mean technique we no longer need the order-set of email records.
 - Simply save the emails to send in a Set
+*** DONE Return acc for verification
 ** Next...
+*** How about sending the email while processing.
+- Add records to a queuue and have another process send them?
 *** Command line to accept test file or number of test records to generate
 *** Could use environ to pull 'max' values out of the enironment
-*** How about sending the email while processing. Add records to a queuue and have another process send them?
 *** What about a long running version. Suppose one that doesn't end?
-**** Interruptable?
-**** Support for interface to values while running
+- Interruptable?
+- Support for interface to values while running
 
 
