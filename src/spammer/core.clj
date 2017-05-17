@@ -1,4 +1,5 @@
 (ns spammer.core
+  (:gen-class)
   (:require [spammer.process :as process]
             [spammer.data :as data]))
 
