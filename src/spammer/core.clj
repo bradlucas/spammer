@@ -1,4 +1,5 @@
 (ns spammer.core
+  (:gen-class)
   (:require [spammer.process :as process]
             [spammer.data :as data]))
 
@@ -12,8 +13,11 @@
     (println "Processing " (count data) " sample email data records")
     (println "--------------------------------------------------------------------------------")
     (println "Send " (count send-emails))
-    (doseq [r send-emails]
+    (doseq [r (take 10 send-emails)]
       (println (:email-address r))
+      )
+    (if (> (count send-emails) 10)
+      (println "...")
       )
     )
   )
